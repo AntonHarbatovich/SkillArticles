@@ -21,17 +21,20 @@ class ViewBindingDelegate<T : ViewBinding>(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
+        //run on activity create callback called
         if (_value == null) {
             _value = initializer(activity.layoutInflater)
         }
-        activity.setContentView(_value!!.root)
-        activity.lifecycle.removeObserver(this)
+
+        activity.setContentView(_value!!.root) //set main view
+        activity.lifecycle.removeObserver(this) //unregister observe this
     }
 
     override fun getValue(thisRef: AppCompatActivity, property: KProperty<*>): T {
         if (_value == null) {
             _value = initializer(thisRef.layoutInflater)
         }
+
         return _value!!
     }
 }
