@@ -26,7 +26,7 @@ abstract class BaseViewModel<T>(initState: T) : ViewModel() {
         get() = state.value!!
 
 
-     /***
+    /***
      * лямбда выражение принимает в качестве аргумента текущее состояние и возвращает
      * модифицированное состояние, которое присваивается текущему состоянию
      */
@@ -51,6 +51,20 @@ abstract class BaseViewModel<T>(initState: T) : ViewModel() {
      */
     fun observeState(owner: LifecycleOwner, onChanged: (newState: T) -> Unit) {
         state.observe(owner, Observer { onChanged(it!!) })
+    }
+
+    /***
+     * вспомогательная функция помогающая наблюдать за изменениями части стейта ViewModel
+     */
+    fun <D> observeSubState(
+        owner: LifecycleOwner,
+        transform: (T) -> D,
+        onChanged: (subState: D) -> Unit
+    ) {
+        state
+            .map(transform)
+            .distinctUntilChanged()
+            .observe(owner, Observer { onChanged(it!!) })
     }
 
     /***
@@ -121,6 +135,7 @@ class EventObserver<E>(private val onEventUnhandledContent: (E) -> Unit) : Obser
 
 sealed class Notify() {
     abstract val message: String
+
     data class TextMessage(override val message: String) : Notify()
 
     data class ActionMessage(

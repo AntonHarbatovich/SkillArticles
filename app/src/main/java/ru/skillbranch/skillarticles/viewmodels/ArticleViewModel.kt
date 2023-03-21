@@ -5,9 +5,9 @@ import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
 import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
+import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.extensions.toAppSettings
 import ru.skillbranch.skillarticles.extensions.toArticlePersonalInfo
-import ru.skillbranch.skillarticles.extensions.format
 
 class ArticleViewModel(private val articleId: String) :
     BaseViewModel<ArticleState>(ArticleState()), IArticleViewModel {
@@ -17,7 +17,7 @@ class ArticleViewModel(private val articleId: String) :
         //subscribe on mutable data
         subscribeOnDataSource(getArticleData()) { article, state ->
             article ?: return@subscribeOnDataSource null
-            Log.e("ArticleViewModel", "author: ${article.author}" );
+            Log.e("ArticleViewModel", "author: ${article.author}");
             state.copy(
                 shareLink = article.shareLink,
                 title = article.title,
@@ -28,23 +28,23 @@ class ArticleViewModel(private val articleId: String) :
             )
         }
 
-        subscribeOnDataSource(getArticleContent()){ content, state ->
-            content ?: return@subscribeOnDataSource  null
+        subscribeOnDataSource(getArticleContent()) { content, state ->
+            content ?: return@subscribeOnDataSource null
             state.copy(
                 isLoadingContent = false,
                 content = content
             )
         }
 
-        subscribeOnDataSource(getArticlePersonalInfo()){ info, state ->
+        subscribeOnDataSource(getArticlePersonalInfo()) { info, state ->
             info ?: return@subscribeOnDataSource null
             state.copy(
-                isBookmark =  info.isBookmark,
+                isBookmark = info.isBookmark,
                 isLike = info.isLike
             )
         }
 
-        subscribeOnDataSource(repository.getAppSettings()){ settings, state ->
+        subscribeOnDataSource(repository.getAppSettings()) { settings, state ->
             state.copy(
                 isDarkMode = settings.isDarkMode,
                 isBigText = settings.isBigText
@@ -101,7 +101,7 @@ class ArticleViewModel(private val articleId: String) :
 
         toggleLike()
 
-        val msg = if(!isLiked) Notify.TextMessage("Mark is liked")
+        val msg = if (!isLiked) Notify.TextMessage("Mark is liked")
         else {
             Notify.ActionMessage(
                 "Don`t like it anymore", //message
@@ -116,7 +116,7 @@ class ArticleViewModel(private val articleId: String) :
 
     //not implemented
     override fun handleShare() {
-        val  msg = "Share is not implemented"
+        val msg = "Share is not implemented"
         notify(Notify.ErrorMessage(msg, "OK", null))
     }
 
@@ -159,3 +159,23 @@ data class ArticleState(
     val content: List<String> = emptyList(), //контент
     val reviews: List<Any> = emptyList() //комментарии
 )
+
+data class BottombarData(
+    val isLike: Boolean = false, //щтмечено ка Like
+    val isBookmark: Boolean = false, //в закдаках
+    val isShowMenu: Boolean = false,  //отображается меню
+    val isSearch: Boolean = false, //режим поиска
+    val resultCount: Int = 0, //количество найденных вхождений
+    val searchPosition: Int = 0 //текущая позиция поиска
+)
+
+data class SubmenuData(
+    val isShowMenu: Boolean = false, //отображается меню
+    val isBigText: Boolean = false, //шрифт увеличен
+    val isDarkMode: Boolean = false, //темный режим
+)
+
+fun ArticleState.toBottombarData() =
+    BottombarData(isLike, isBookmark, isShowMenu, isSearch, searchResults.size, searchPosition)
+
+fun ArticleState.toSubmenuData() = SubmenuData(isShowMenu, isBigText, isDarkMode)
